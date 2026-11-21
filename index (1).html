@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Repaso WordPress y ERP</title>
+<meta name="theme-color" content="#12141a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Concepto: panel de estudio oscuro, tarjetas sobrias, acento azul lavanda y titular serif */
+:root {
+  --bg: #12141a;
+  --surface: #1a1d26;
+  --surface2: #14161d;
+  --fg: #f1f3f8;
+  --muted: #8e94a8;
+  --line: #2a2e3b;
+  --accent: #8b97ff;
+  --on-accent: #12141a;
+  --ok: #5fd39a;
+  --ok-soft: #14301f;
+  --bad: #ff8b82;
+  --bad-soft: #3a1a1f;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 740px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+#root { display: flex; flex-direction: column; gap: 16px; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.9rem, 6vw, 2.4rem); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font: 700 1.05rem var(--font-body); margin: 0; }
+.top { display: flex; flex-wrap: wrap; gap: 12px 16px; justify-content: space-between; align-items: flex-start; }
+.sub { color: var(--muted); margin: 4px 0 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.meta, .hint { color: var(--muted); font-size: 0.9rem; margin: 0; }
+button { font-family: inherit; }
+button:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.seg { display: inline-flex; max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface2); }
+.seg button { border: 0; background: transparent; color: var(--fg); padding: 9px 14px; font: 500 0.92rem var(--font-body); cursor: pointer; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.seg button:disabled { color: var(--muted); opacity: .45; cursor: not-allowed; }
+.pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.pill { border: 1.5px solid var(--accent); background: transparent; color: var(--fg); padding: 8px 16px; border-radius: 999px; font: 500 0.92rem var(--font-body); cursor: pointer; }
+.pill[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.btn { border: 0; background: var(--accent); color: var(--on-accent); font: 700 1.05rem var(--font-body); padding: 14px 28px; border-radius: 12px; cursor: pointer; align-self: flex-start; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1.5px solid var(--line); }
+.btn.good { background: var(--ok); color: var(--on-accent); }
+.btn.warn { background: var(--bad); color: var(--on-accent); }
+.btn.small { padding: 8px 14px; font-size: 0.88rem; border-radius: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.link { border: 0; background: none; color: var(--muted); font: 500 0.92rem var(--font-body); cursor: pointer; padding: 4px 0; }
+.link:hover { color: var(--fg); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stat small { color: var(--muted); font-size: 0.82rem; }
+.stat b { font: 600 1.5rem var(--font-body); font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 0.8rem; }
+.units { display: flex; flex-direction: column; }
+.urow { display: grid; grid-template-columns: minmax(0, 1fr) 120px 40px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.urow:first-child { border-top: 0; }
+.urow span { min-width: 0; overflow-wrap: anywhere; }
+.urow em { font-style: normal; text-align: right; font-variant-numeric: tabular-nums; }
+.bar { display: block; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar b { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+@media (max-width: 480px) { .urow { grid-template-columns: minmax(0, 1fr) 70px 36px; gap: 8px; } .card { padding: 16px; } }
+
+details.card summary { cursor: pointer; font-weight: 700; }
+.expl { display: flex; flex-direction: column; gap: 10px; color: var(--muted); font-size: 0.92rem; }
+.expl p { margin: 0; }
+.expl b { color: var(--fg); }
+.foot { text-align: center; color: var(--muted); font-size: 0.82rem; margin: 4px 0 0; }
+
+.chart { width: 100%; height: auto; display: block; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .tgt { stroke: var(--ok); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .ln { stroke: var(--accent); stroke-width: 2; fill: none; stroke-linejoin: round; }
+.chart .pt { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.chart .pt.ok { fill: var(--ok); }
+.chart text { fill: var(--muted); font: 11px var(--font-body); }
+.chart text.tl { fill: var(--ok); font-weight: 600; }
+.chart text.val { fill: var(--fg); font-weight: 600; font-size: 12px; }
+
+.topbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; color: var(--muted); font-size: 0.9rem; }
+.progress { display: flex; flex-direction: column; gap: 6px; }
+.progress-top { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tag { align-self: flex-start; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 2px 9px; border-radius: 99px; }
+.q { font: 600 1.15rem/1.4 var(--font-body); margin: 0; text-wrap: balance; }
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt { display: flex; gap: 12px; align-items: flex-start; text-align: left; width: 100%; background: var(--surface2); color: var(--fg); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; font: 400 1rem/1.4 var(--font-body); cursor: pointer; min-width: 0; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt .l { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font: 600 0.8rem var(--font-body); color: var(--muted); }
+.opt .t { min-width: 0; overflow-wrap: anywhere; }
+.opt:disabled { cursor: default; }
+.opt.ok { border-color: var(--ok); background: var(--ok-soft); }
+.opt.ok .l { background: var(--ok); border-color: var(--ok); color: var(--on-accent); }
+.opt.bad { border-color: var(--bad); background: var(--bad-soft); }
+.opt.bad .l { background: var(--bad); border-color: var(--bad); color: var(--on-accent); }
+.opt.sel { border-color: var(--accent); }
+.opt.sel .l { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.fb { border-radius: 12px; padding: 12px 14px; font-size: 0.93rem; }
+.fb.ok { background: var(--ok-soft); color: var(--ok); }
+.fb.bad { background: var(--bad-soft); color: var(--bad); }
+.fb strong { display: block; margin-bottom: 2px; }
+.fb p { margin: 0; color: var(--fg); }
+textarea { width: 100%; min-height: 110px; resize: vertical; background: var(--surface2); color: var(--fg); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; font: 400 1rem/1.5 var(--font-body); }
+.model { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface2); }
+.model h3 { margin: 0; font: 600 0.78rem var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.model p { margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 0.85rem; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.chip.hit { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+.score { font: 400 3.2rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.review { display: flex; flex-direction: column; gap: 10px; }
+.review > div { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; overflow-wrap: anywhere; }
+.review b { display: block; margin-bottom: 4px; }
+.review small { display: block; color: var(--ok); font-weight: 500; }
+.review small.no { color: var(--bad); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div id="root"></div>
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+/* ---------- BANCO DE PREGUNTAS ABC: c = correcta, w = incorrectas ---------- */
+const ABC = [
+/* WordPress */
+{t:'wp', q:'¿Qué es WordPress?', c:'Un programa gratis para hacer webs y blogs sin programar', w:['Un lenguaje de programación para crear webs','Un servidor de bases de datos'], e:'Se cambia con temas (aspecto) y plugins (funciones).'},
+{t:'wp', q:'¿Qué cambia un tema?', c:'El aspecto de la web', w:['Las funciones de la web','Los usuarios que pueden entrar'], e:'Los temas cambian el aspecto; los plugins añaden funciones.'},
+{t:'wp', q:'¿Cómo se entra al panel de administración de una web WordPress?', c:'tu-web.com/wp-admin', w:['tu-web.com/phpmyadmin','tu-web.com/wp-config'], e:'En local sería localhost/practica/wp-admin.'},
+{t:'wp', q:'¿Dónde se cambia el idioma del panel?', c:'Usuarios > Perfil', w:['Ajustes > Escritura','Apariencia > Temas'], e:'El idioma del panel es del usuario, por eso va en su perfil.'},
+{t:'wp', q:'¿Qué menú sirve para escribir las noticias del blog?', c:'Entradas', w:['Páginas','Medios'], e:'Páginas es para contenido fijo como Contacto o Quiénes somos.'},
+{t:'wp', q:'¿Cuál de estos contenidos es mejor como PÁGINA y no como entrada?', c:'Quiénes somos', w:['Una noticia de esta semana','Un artículo sobre las novedades del sector'], e:'Las páginas no cambian casi nunca, no llevan fecha ni categorías.'},
+{t:'wp', q:'¿Qué hace la acción "Fijar" de una entrada?', c:'Hace que se quede arriba del blog', w:['Impide que se pueda editar','La convierte en página'], e:'Fijar solo existe en entradas, no en páginas.'},
+{t:'wp', q:'¿Para qué sirve la Edición rápida?', c:'Cambiar título, slug, fecha o estado sin abrir el editor', w:['Escribir una entrada nueva desde el escritorio','Cambiar el tema de la web sin entrar al editor'], e:'Las acciones en lote permiten cambiar varias entradas a la vez.'},
+{t:'wp', q:'En el editor Gutenberg, todo el contenido son...', c:'Bloques', w:['Plantillas','Widgets'], e:'Un párrafo, un título o una foto son bloques que se mueven como piezas.'},
+{t:'wp', q:'¿Cómo se añade rápido un bloque de imagen escribiendo?', c:'/imagen', w:['#imagen','+img+'], e:'Escribir / y el nombre del bloque, o pulsar el botón +.'},
+{t:'wp', q:'Si una entrada ya está publicada y la editas, el botón pasa a llamarse...', c:'Actualizar', w:['Guardar borrador','Programar'], e:'Publicar solo aparece la primera vez.'},
+{t:'wp', q:'¿Cómo se programa una entrada para más adelante?', c:'Cambiando la fecha de publicación', w:['Guardándola como borrador','Marcándola como Fijar'], e:'Con una fecha futura, WordPress la publica cuando llegue.'},
+{t:'wp', q:'Si no eliges categoría al crear una entrada...', c:'Va a "Sin categoría"', w:['No se puede publicar','Se queda sin categoría y sin guardar'], e:'La categoría es obligatoria, pero tiene un valor por defecto (se cambia en Ajustes > Escritura).'},
+{t:'wp', q:'¿Qué diferencia a una etiqueta de una categoría?', c:'La etiqueta no puede tener hijas', w:['La etiqueta es obligatoria','La etiqueta sirve también para las páginas'], e:'Categorías: temas grandes con hijas (Coches > Ford). Etiquetas: palabras clave, sin jerarquía. Ninguna sirve para páginas.'},
+{t:'wp', q:'¿Cómo se escribe correctamente un slug?', c:'mi-viaje-a-roma', w:['Mi Viaje a Roma','mi_viaje_a_róma'], e:'Minúsculas, sin tildes y con guiones. Es el final de la URL.'},
+{t:'wp', q:'¿Qué pasa al borrar un archivo de la Biblioteca de medios?', c:'Se borra del todo, no va a la papelera', w:['Va a la papelera 30 días','Se oculta pero sigue en el servidor'], e:'Cuidado: no se puede recuperar.'},
+{t:'wp', q:'El texto alternativo de una imagen sirve para...', c:'Describir la foto, ayudar a los ciegos y al SEO', w:['Poner el título visible bajo la foto','Hacer la foto más ligera'], e:'Describe lo que se ve en la imagen.'},
+{t:'wp', q:'¿Dónde se activa que los comentarios esperen a ser aprobados?', c:'Ajustes > Comentarios', w:['Comentarios > Pendientes','Usuarios > Perfil'], e:'Si la moderación está activa, tú apruebas cada comentario.'},
+{t:'wp', q:'Akismet es un plugin que...', c:'Quita el spam y necesita una clave API', w:['Hace copias de seguridad','Crea formularios arrastrando campos'], e:'Viene con WordPress.'},
+{t:'wp', q:'Twenty Twenty-Five es un tema...', c:'De bloques', w:['Clásico','Solo para blogs'], e:'En los temas de bloques los colores y letras se cambian en Apariencia > Editor > Estilos.'},
+{t:'wp', q:'¿Dónde se cambian colores y letras en un tema CLÁSICO?', c:'Apariencia > Personalizar', w:['Apariencia > Editor > Estilos','Ajustes > Generales'], e:'En el tema de bloques sería Editor > Estilos.'},
+{t:'wp', q:'En Apariencia > Menús, ¿cómo se crea un submenú?', c:'Moviendo el elemento hacia la derecha', w:['Moviendo el elemento hacia arriba','Creando un menú nuevo con el mismo nombre'], e:'En temas de bloques se usa el bloque Navegación.'},
+{t:'wp', q:'¿Qué perfil puede escribir pero NO publicar?', c:'Colaborador', w:['Autor','Suscriptor'], e:'Autor publica lo suyo. Suscriptor solo gestiona su perfil.'},
+{t:'wp', q:'El orden de perfiles de más a menos permisos es...', c:'Administrador, Editor, Autor, Colaborador, Suscriptor', w:['Administrador, Autor, Editor, Colaborador, Suscriptor','Editor, Administrador, Autor, Suscriptor, Colaborador'], e:'El Editor controla todo el contenido; el Autor solo el suyo.'},
+{t:'wp', q:'El nombre de usuario de WordPress...', c:'No se puede cambiar', w:['Se cambia en Usuarios > Perfil','Solo lo cambia un Editor'], e:'Sí se puede cambiar el nombre público que se muestra, pero no el usuario.'},
+{t:'wp', q:'Herramientas > Exportar saca el contenido en un archivo...', c:'XML', w:['SQL','CSV'], e:'Contiene entradas, páginas y comentarios. El .sql es de phpMyAdmin.'},
+{t:'wp', q:'¿Qué herramienta dice qué falla y qué se puede mejorar en la web?', c:'Salud del sitio', w:['Importar','Datos personales'], e:'Está en el menú Herramientas.'},
+{t:'wp', q:'Herramientas > Datos personales sirve para...', c:'Dar o borrar los datos de un usuario si lo pide (RGPD)', w:['Cambiar el correo del administrador','Exportar las entradas'], e:'Es la herramienta del derecho de acceso y supresión.'},
+{t:'wp', q:'¿Qué formato de enlace permanente es el mejor para el SEO?', c:'Nombre de la entrada (/mi-entrada/)', w:['Simple (?p=123)','Día y nombre'], e:'Se configura en Ajustes > Enlaces permanentes.'},
+{t:'wp', q:'¿Qué ajuste controla si Google puede ver la web?', c:'Ajustes > Lectura', w:['Ajustes > Privacidad','Ajustes > Medios'], e:'Lectura también decide qué sale en la portada.'},
+{t:'wp', q:'¿Qué plugin bloquea a quien falla la contraseña muchas veces?', c:'Limit Login Attempts', w:['WP-Optimize','Smush'], e:'Frena los intentos de adivinar contraseñas.'},
+{t:'wp', q:'¿Qué copia UpdraftPlus?', c:'La base de datos y wp-content', w:['Solo la base de datos','Solo las fotos'], e:'Sirve para recuperar la web si se rompe.'},
+{t:'wp', q:'¿Qué hace Smush?', c:'Aligera las fotos y usa lazy load', w:['Limpia la base de datos','Pone el aviso de cookies'], e:'Lazy load: carga las fotos al bajar.'},
+{t:'wp', q:'¿Qué plugin crea el aviso de cookies y la política de cookies?', c:'Complianz', w:['AIOS','WPForms'], e:'AIOS es seguridad general, con cortafuegos.'},
+{t:'wp', q:'¿Por qué no ves la caché funcionar cuando estás conectado como administrador?', c:'Porque no funciona con la sesión de administrador; se prueba en incógnito', w:['Porque hay que activarla en Ajustes > Lectura','Porque solo funciona en el móvil'], e:'Si no ves un cambio, vacía la caché.'},
+{t:'wp', q:'¿Qué ley regula el Aviso legal?', c:'LSSI', w:['RGPD','LOPDGDD'], e:'Es obligatorio si la web gana dinero, aunque sea con anuncios.'},
+{t:'wp', q:'La política de privacidad es obligatoria cuando...', c:'Se piden datos (formularios, comentarios)', w:['La web gana dinero','Hay cookies que no son técnicas'], e:'Se basa en RGPD y LOPDGDD. Cada pregunta corresponde a una página legal distinta.'},
+{t:'wp', q:'¿Quién vigila y multa en España por incumplir la protección de datos?', c:'La AEPD', w:['La LSSI','El Registro Mercantil'], e:'RGPD es la ley europea, la que manda más.'},
+{t:'wp', q:'¿Qué archivo deja root de MySQL sin contraseña en XAMPP?', c:'C:\\xampp\\mysql\\resetroot.bat', w:['C:\\xampp\\php\\php.ini','C:\\xampp\\apache\\conf\\httpd.conf'], e:'La otra forma es añadir skip-grant-tables en my.ini.'},
+{t:'wp', q:'Al cambiar la contraseña de la base de datos, hay que cambiar también...', c:'DB_PASSWORD en wp-config.php', w:['user_pass en wp_users','La clave API de Akismet'], e:'Si no, la web no conectará con la base de datos.'},
+{t:'wp', q:'¿Por qué se elige la función MD5 al cambiar user_pass en phpMyAdmin?', c:'Porque WordPress guarda las contraseñas cifradas', w:['Porque es la función más rápida','Porque phpMyAdmin lo exige para cualquier campo'], e:'Escribir la contraseña en texto normal no funcionaría.'},
+/* ERP */
+{t:'erp', q:'¿Qué significa ERP?', c:'Enterprise Resource Planning', w:['Enterprise Relationship Planning','Electronic Resource Processing'], e:'Sistemas de gestión de información que integran y automatizan prácticas de negocio.'},
+{t:'erp', q:'¿Qué es un CRM?', c:'Un sistema para gestionar la relación con los clientes', w:['Un sistema para gestionar la relación con los proveedores','Un sistema de copias de seguridad'], e:'Es un ERP especializado en clientes, ventas y marketing.'},
+{t:'erp', q:'¿Cuál de estos es un ERP de código abierto?', c:'OpenBravo', w:['SAP Business Suite','Microsoft Dynamics'], e:'SAP es el proveedor más grande; OpenBravo y OpenERP son gratuitos.'},
+{t:'erp', q:'¿Cuál es el proveedor de ERP más grande?', c:'SAP', w:['Oracle','OpenERP'], e:'Oracle y Microsoft Dynamics son opciones comerciales.'},
+{t:'erp', q:'Un objetivo principal de un ERP es...', c:'Optimizar los procesos empresariales, con menos tiempo y coste', w:['Sustituir a todos los empleados','Aumentar el número de programas distintos'], e:'Otros objetivos: información digitalizada y eliminar datos innecesarios.'},
+{t:'erp', q:'¿Cuál es una ventaja de un ERP?', c:'Información centralizada y actualizada', w:['Cada departamento tiene su propia base de datos','Todos acceden a toda la información'], e:'El acceso a la info se da por roles.'},
+{t:'erp', q:'¿Cómo se controla qué información ve cada persona en un ERP?', c:'Por roles', w:['Por el orden de llegada','Por el tamaño del departamento'], e:'Es una de las ventajas del ERP.'},
+{t:'erp', q:'En el esquema general de un ERP, ¿qué hay en el centro?', c:'La base de datos central', w:['El módulo de finanzas','El módulo de clientes'], e:'Los módulos (finanzas, producción, inventario, ventas, RRHH) se conectan a ella.'},
+{t:'erp', q:'¿Qué dos áreas generan intercambio de información?', c:'Relaciones con los clientes y relaciones con los proveedores', w:['Producción y almacén','Finanzas y recursos humanos'], e:'Con los clientes entra el CRM; con los proveedores, la cadena de valor.'},
+{t:'erp', q:'Un ERP conectado con los proveedores permite...', c:'Conocer en tiempo real su planificación de producción y gestionar el stock', w:['Fabricar sus productos','Evitar pagar facturas'], e:'También facilita la entrada de info y el registro de facturas.'},
+{t:'erp', q:'El diagrama de flujo de información de funciones cruzadas muestra...', c:'La relación entre un proceso empresarial y las unidades funcionales', w:['La estructura de la base de datos','El organigrama de la empresa'], e:'Por ejemplo: compras (pedido, albarán, factura) y ventas (presupuesto, pedido...).'},
+{t:'erp', q:'Un ERP INTEGRAL es aquel en el que...', c:'Todos los procesos están conectados y el dato se introduce una sola vez', w:['Se instalan solo los módulos necesarios','Se configura para cada sector'], e:'Menos errores y más seguridad. La segunda opción es modular; la tercera, adaptable.'},
+{t:'erp', q:'Un ERP MODULAR es aquel en el que...', c:'Cada empresa instala solo los módulos que necesita', w:['Todo se introduce una sola vez','Se adapta a cualquier sector por parametrización'], e:'Ahorra dinero y facilita la parte técnica.'},
+{t:'erp', q:'Un ERP ADAPTABLE se ajusta a cada empresa gracias a...', c:'La parametrización', w:['La división en módulos','La centralización de datos'], e:'Se adapta a cualquier sector: sanidad, construcción, administración pública...'},
+{t:'erp', q:'¿Qué módulo es la base del ERP y guarda las transacciones para auditorías?', c:'Finanzas', w:['Producción','Inventario y logística'], e:'Es el núcleo contable de todo el sistema.'},
+{t:'erp', q:'¿Qué módulo se encarga de los movimientos físicos de los artículos?', c:'Producción', w:['Finanzas','Ventas y marketing'], e:'Inventario y logística lleva stock, almacenes y flujos de entrada y salida.'},
+{t:'erp', q:'El módulo de Inventario y Logística gestiona...', c:'Stock, almacenes y flujos de entrada y salida', w:['La interacción con los clientes','La gestión de personal'], e:'Ventas y marketing es la interfaz con los clientes; RRHH, el personal.'},
+{t:'erp', q:'¿Qué módulo es la interfaz de interacción con los clientes?', c:'Ventas y marketing', w:['Recursos humanos','Finanzas'], e:'Recursos humanos es la gestión de personal.'},
+{t:'erp', q:'Los conectores de un ERP son...', c:'Pequeños programas que meten y sacan datos de la base de datos del ERP', w:['Cables de red del servidor','Exportaciones de datos en PDF'], e:'Se hacen en Python, Java, etc. y solo funcionan en su ERP. Si se publican como Open Source, otras empresas los aprovechan.'},
+{t:'erp', q:'Si el ERP exporta a ofimática, la información puede salir...', c:'Como informe en un procesador de textos o como datos en bruto en una hoja de cálculo', w:['Solo como imagen','Solo en un archivo XML'], e:'El informe se puede completar a mano; los datos en bruto se trabajan después.'},
+{t:'erp', q:'En la importación/exportación XML, los importadores...', c:'Hacen una conversión previa a XML para reconocer entidades y atributos', w:['Comprimen los datos a CSV','Cifran los datos con contraseña'], e:'Así un ERP se comunica con otro.'},
+{t:'erp', q:'En un archivo CSV, las columnas se separan con...', c:'Comas, o punto y coma si la coma se usa para los decimales', w:['Tabuladores siempre','Comillas dobles'], e:'Cada fila va en una línea.'},
+{t:'erp', q:'En un CSV, si un dato lleva una coma, un salto de línea o comillas, se escribe...', c:'Entre comillas dobles', w:['Entre paréntesis','Con una barra invertida delante'], e:'Así no se confunde con un separador.'},
+{t:'erp', q:'Business Intelligence consiste en...', c:'Usar los datos de la empresa para entender cómo va y anticiparse a lo que vendrá', w:['Sustituir el ERP por otro programa','Guardar copias de seguridad fuera del edificio'], e:'Sirve para tomar mejores decisiones.'},
+{t:'erp', q:'ETL significa...', c:'Extraer, transformar y cargar', w:['Enviar, traducir y limpiar','Exportar, trasladar y listar'], e:'Se sacan datos de distintas fuentes, se limpian, se unifican y se guardan en un almacén de datos.'},
+{t:'erp', q:'¿Cuánto tiempo se usa un software de BI?', c:'Mientras ayude a la empresa a mejorar; si no, se cambia', w:['Siempre, una vez instalado','Un año como máximo'], e:'Puede ser un módulo del ERP o un programa de otro proveedor.'},
+{t:'erp', q:'Un riesgo FÍSICO es...', c:'La rotura de un disco duro por desgaste o altas temperaturas', w:['Un troyano','Un ataque por la red'], e:'Se evita con aulas con refrigeración, detección de humos y control de acceso.'},
+{t:'erp', q:'Un riesgo LÓGICO es...', c:'Un fallo de software o de seguridad, como un troyano', w:['El desgaste de un componente electrónico','Un fallo de la refrigeración'], e:'Hay que identificarlos antes, durante y después de instalar el sistema.'},
+{t:'erp', q:'Las copias de seguridad deben ser...', c:'Centralizadas, regulares y guardadas fuera del edificio', w:['Manuales y guardadas en el mismo servidor','Solo anuales'], e:'Así se puede restaurar el sistema en otro sitio si hay un problema.'},
+{t:'erp', q:'El plan de mantenimiento indica...', c:'Cada cuánto se hacen las copias y de qué tipo', w:['Qué pasos seguir si algo falla','Qué módulos instalar'], e:'Los pasos si algo falla son del plan de contingencia.'},
+{t:'erp', q:'La función principal del plan de contingencia es...', c:'Garantizar la continuidad de las operaciones de la empresa', w:['Hacer las copias de seguridad','Instalar el ERP'], e:'Fases: Evaluación, Planificación, Pruebas de viabilidad y Ejecución.'},
+{t:'erp', q:'¿Cuál es el orden de las fases de un plan de contingencia?', c:'Evaluación, Planificación, Pruebas de viabilidad, Ejecución', w:['Planificación, Evaluación, Ejecución, Pruebas de viabilidad','Ejecución, Evaluación, Planificación, Pruebas de viabilidad'], e:'Primero se evalúa, luego se planifica, se prueba que sea viable y se ejecuta.'},
+{t:'erp', q:'ECM (Enterprise Content Management) son soluciones para...', c:'Gestionar los contenidos empresariales mediante módulos', w:['Gestionar solo la contabilidad','Crear copias de seguridad'], e:'Módulos: DM, RM, WCM, BPM, Workflow y KM.'},
+{t:'erp', q:'El módulo DM (Document Management)...', c:'Gestiona y almacena muchos documentos, con versiones y búsqueda rápida', w:['Gestiona la web separada del diseño','Gestiona los procesos de negocio'], e:'También relaciona documentos entre sí y hace workflows.'},
+{t:'erp', q:'El módulo RM (Record Management)...', c:'Gestiona documentos que se quieren conservar, digitales o en papel', w:['Permite buscar y analizar conocimiento','Controla quién publica en la web'], e:'Record = registro, lo que hay que conservar.'},
+{t:'erp', q:'El módulo WCM (Web Content Management)...', c:'Gestiona el contenido de una web por separado del diseño y controla quién publica', w:['Gestiona los flujos de documentación','Gestiona el almacenamiento de documentos'], e:'Web Content Management.'},
+{t:'erp', q:'El módulo BPM (Business Process Management)...', c:'Controla, monitoriza y optimiza los procesos de la empresa', w:['Gestiona versiones de documentos','Gestiona el contenido de la web'], e:'Business Process Management.'},
+{t:'erp', q:'El módulo Workflow...', c:'Gestiona flujos de documentación y tareas en secuencia o en paralelo', w:['Almacena documentos en papel','Analiza y comparte conocimiento'], e:'Genera flujos de trabajo con tareas secuenciales o paralelas.'},
+{t:'erp', q:'El módulo KM (Knowledge Management)...', c:'Permite buscar, analizar, proteger y compartir información relevante', w:['Gestiona los procesos de negocio','Controla el diseño de la web'], e:'Knowledge = conocimiento.'},
+{t:'erp', q:'¿Cuál de estas herramientas es un software de visualización de PDF?', c:'Adobe Reader', w:['Dia UML','Magento'], e:'Microsoft Office sirve para importar y exportar.'},
+{t:'erp', q:'Magento es...', c:'Una aplicación de comercio electrónico online', w:['Un software de diagramas UML','Un servidor de mapas web'], e:'Dia UML hace diagramas; Google Maps es el servidor de mapas.'},
+{t:'erp', q:'¿Qué es Dia UML?', c:'Un software de diagramas para implementar módulos', w:['Una suite ofimática de código abierto','Un servidor de mapas web'], e:'OpenOffice es la suite ofimática de código abierto.'},
+{t:'erp', q:'¿Qué permiten las tablas dinámicas de Excel?', c:'Manejar enormes cantidades de datos y verlos desde distintas perspectivas', w:['Cifrar la información del ERP','Convertir un CSV en XML'], e:'Es una herramienta de business intelligence.'},
+{t:'erp', q:'El análisis ABC en una tabla dinámica sirve para...', c:'Ordenar los datos por importancia', w:['Unir hojas de distintos libros','Crear copias de seguridad'], e:'Se puede ver en porcentajes o en números.'},
+{t:'erp', q:'Para enviar a cada cliente correos con plantilla y adjuntos desde el ERP hacen falta...', c:'Dos módulos: un conector en el ERP y otro en el gestor de correo', w:['Un solo módulo en el ERP','Un plugin del navegador'], e:'Es la integración del ERP con el correo.'},
+{t:'wp', u:3, q:'La política de cookies es obligatoria cuando...', c:'Hay cookies que no son técnicas', w:['La web gana dinero','Se piden datos en un formulario'], e:'Si la web gana dinero hace falta el aviso legal; si se piden datos, la política de privacidad.'},
+{t:'wp', u:3, q:'¿Qué ley europea es la que manda más en protección de datos?', c:'El RGPD', w:['La LSSI','La guía de la AEPD'], e:'La AEPD es quien vigila y multa en España.'},
+{t:'wp', u:3, q:'¿Cómo se recupera la contraseña de root de MySQL sin usar el archivo .bat?', c:'Añadiendo skip-grant-tables en my.ini, entrando sin contraseña y cambiándola con ALTER USER', w:['Pulsando "¿Has olvidado tu contraseña?" en el login de WordPress','Editando user_pass en la tabla wp_users con MD5'], e:'Después hay que quitar la línea de my.ini y reiniciar MySQL.'},
+{t:'wp', u:3, q:'¿Cómo recupera su contraseña un usuario de WordPress que tiene correo?', c:'Con "¿Has olvidado tu contraseña?" en el login: le llega un correo para cambiarla', w:['Ejecutando resetroot.bat','Cambiando DB_PASSWORD en wp-config.php'], e:'Root de MySQL no tiene correo de recuperación ni nadie por encima.'},
+{t:'wp', u:3, q:'¿Dónde debe ir la política de privacidad?', c:'En el pie de página y al lado de cada formulario', w:['Solo en el pie de página','Solo en la página de inicio'], e:'El aviso legal va en el pie; la política de cookies, en el pie y en el aviso de cookies.'},
+{t:'erp', u:3, q:'¿Cómo se evitan los riesgos físicos del sistema informático?', c:'Con aulas con refrigeración, detección de humos y control de acceso', w:['Instalando un antivirus y un cortafuegos','Cambiando las contraseñas cada mes'], e:'Los riesgos físicos son fallos de componentes por desgaste, temperatura, etc.'},
+{t:'erp', u:3, q:'¿Cuándo hay que identificar los riesgos lógicos?', c:'Antes, durante y después de instalar el sistema', w:['Solo antes de instalarlo','Solo cuando ocurre un fallo'], e:'Son fallos de software o de seguridad: accesos no autorizados, bugs, ataques por la red o troyanos.'}
+];
+
+/* ---------- PREGUNTAS DE DESARROLLO CORTO ---------- */
+const DEV = [
+{t:'wp', q:'¿Qué diferencia hay entre una entrada y una página?', a:'Entrada: contenido que se publica a menudo y lleva fecha; sale en el blog (de la más nueva a la más vieja) y usa categorías y etiquetas. Página: contenido casi fijo, sin fecha ni categorías, que sale desde el menú (Quiénes somos, Contacto, Aviso legal).', k:['fecha','categorias','menu','blog']},
+{t:'wp', q:'¿En qué se diferencian las categorías de las etiquetas?', a:'Las categorías son los temas grandes (como el índice de un libro), pueden tener hijas y son obligatorias (si no eliges, va a "Sin categoría"). Las etiquetas son palabras clave (como hashtags), no tienen hijas y no son obligatorias.', k:['hijas','obligatoria','palabras clave','temas']},
+{t:'wp', q:'¿Qué es el slug y cómo se escribe?', a:'Es el final de la URL de una entrada o página. Se escribe en minúsculas, sin tildes y con guiones, por ejemplo mi-viaje-a-roma.', k:['url','minusculas','tildes','guiones']},
+{t:'wp', q:'¿Para qué sirve el texto alternativo de una imagen?', a:'Describe la foto con palabras. Ayuda a las personas ciegas (lectores de pantalla) y mejora el SEO.', k:['describe','ciegos','seo']},
+{t:'wp', q:'¿Cómo se programa una entrada para que se publique más tarde?', a:'En el editor, cambiando la fecha de publicación a una fecha futura. El botón Publicar pasa a ser Programar y WordPress la publica cuando llegue ese momento.', k:['fecha','programar','futura']},
+{t:'wp', q:'Nombra los cinco perfiles de usuario de más a menos permisos.', a:'Administrador (todo), Editor (todo el contenido), Autor (lo suyo), Colaborador (escribe pero no publica) y Suscriptor (solo su perfil).', k:['administrador','editor','autor','colaborador','suscriptor']},
+{t:'wp', q:'¿Dónde se cambian colores y letras en un tema clásico y en uno de bloques?', a:'Tema clásico: Apariencia > Personalizar. Tema de bloques (como Twenty Twenty-Five): Apariencia > Editor > Estilos.', k:['personalizar','editor','estilos']},
+{t:'wp', q:'¿Para qué sirve la caché y por qué no se ve funcionando como administrador?', a:'Guarda una copia ya hecha de cada página para no crearla en cada visita: la web va más rápida, aguanta más visitas y sale mejor en Google. No funciona con la sesión de administrador abierta, así que se prueba en incógnito. Si no ves un cambio, hay que vaciar la caché.', k:['copia','rapida','incognito','vaciar']},
+{t:'wp', q:'¿Qué hace UpdraftPlus y qué copia?', a:'Hace copias de seguridad de la base de datos y de la carpeta wp-content, para recuperar la web si se rompe.', k:['copias','base de datos','wp-content']},
+{t:'wp', q:'¿Qué debe llevar el aviso legal y cuándo es obligatorio?', a:'Nombre o empresa, NIF, dirección, correo, Registro Mercantil (si es empresa), normas de uso y derechos de autor. Se basa en la LSSI y es obligatorio si la web gana dinero, aunque sea con anuncios. Va en el pie de página.', k:['lssi','nif','gana dinero','pie']},
+{t:'wp', q:'¿Qué debe incluir la política de privacidad?', a:'Quién recoge los datos, cuáles, para qué, cuánto tiempo se guardan, a quién se dan, los derechos (acceso, rectificación, supresión, oposición, limitación y portabilidad) y que se puede reclamar ante la AEPD. Es obligatoria si se piden datos (RGPD y LOPDGDD).', k:['rgpd','derechos','aepd','datos']},
+{t:'wp', q:'¿Cómo recuperas la contraseña de un usuario de WordPress si no tienes correo?', a:'En phpMyAdmin, tabla wp_users > Editar > campo user_pass: escribir la nueva contraseña y elegir la función MD5, porque WordPress guarda las contraseñas cifradas.', k:['phpmyadmin','wp_users','user_pass','md5']},
+{t:'wp', q:'Has cambiado la contraseña de root de MySQL. ¿Qué más debes hacer?', a:'Cambiar también DB_PASSWORD en wp-config.php. Si no, la web no podrá conectar con la base de datos.', k:['db_password','wp-config']},
+{t:'wp', q:'Explica qué hacen Limit Login Attempts, WP-Optimize y Smush.', a:'Limit Login Attempts bloquea a quien falla la contraseña muchas veces. WP-Optimize limpia la base de datos y activa la caché para que la web vaya rápida. Smush aligera las fotos y usa lazy load (las carga al bajar).', k:['bloquea','base de datos','cache','lazy load']},
+{t:'erp', q:'¿Qué es un sistema ERP?', a:'Un sistema de gestión empresarial: software grande que integra y automatiza las prácticas de negocio de los aspectos operativos o productivos de una empresa y elimina complejas conexiones entre sistemas de distintos proveedores. Tiene arquitectura modular (nóminas, finanzas...).', k:['integra','automatiza','modular','empresa']},
+{t:'erp', q:'¿Qué es un CRM?', a:'Customer Relationship Management: sistema informático de apoyo a la gestión de las relaciones con los clientes, venta y marketing. Es un ERP especializado en la relación con los clientes.', k:['clientes','relacion','ventas','marketing']},
+{t:'erp', q:'Cita tres ventajas de un ERP.', a:'Por ejemplo: detección de puntos débiles en la gestión empresarial, optimización de procesos, información centralizada y actualizada, acceso a la información por roles, compartición de información entre procesos, menos costes y tiempo, y análisis de la empresa globalmente.', k:['centralizada','roles','costes','procesos']},
+{t:'erp', q:'Diferencia entre ERP integral, modular y adaptable.', a:'Integral: todos los procesos están conectados y el dato se introduce una sola vez. Modular: está dividido en módulos y cada empresa instala solo los que necesita. Adaptable: se configura por parametrización para ajustarse a cada empresa y sector.', k:['una sola vez','modulos','parametrizacion']},
+{t:'erp', q:'Nombra los cinco módulos activos de un ERP y su función.', a:'Finanzas (base del ERP, transacciones y auditorías), Producción (movimientos físicos de artículos), Inventario y Logística (stock, almacenes, entradas y salidas), Ventas y Marketing (interfaz con clientes) y Recursos Humanos (gestión de personal).', k:['finanzas','produccion','inventario','ventas','recursos humanos']},
+{t:'erp', q:'¿Qué son los conectores y para qué sirven?', a:'Pequeños programas (en Python, Java, etc.) que sirven para meter y sacar datos de la base de datos del ERP y adaptarlo a nuevas necesidades. Cada uno funciona solo en su ERP, pero si se publica como Open Source, otras empresas con el mismo ERP pueden usarlo gratis.', k:['programas','base de datos','open source','erp']},
+{t:'erp', q:'¿Qué es un archivo CSV y qué reglas sigue?', a:'Un archivo de texto sencillo con forma de tabla, que abre cualquier hoja de cálculo. Las columnas se separan con comas (o punto y coma si la coma se usa para decimales), cada fila va en una línea y si un dato lleva coma, salto de línea o comillas se escribe entre comillas dobles.', k:['texto','comas','linea','comillas']},
+{t:'erp', q:'¿Qué es Business Intelligence y qué significa ETL?', a:'BI es usar los datos de la empresa para entender cómo va ahora y anticiparse a lo que vendrá y tomar mejores decisiones. ETL: extraer, transformar y cargar; se sacan datos de distintas fuentes, se limpian y unifican y se guardan en un almacén de datos.', k:['decisiones','extraer','transformar','cargar','almacen']},
+{t:'erp', q:'Diferencia entre riesgos físicos y lógicos, con un ejemplo de cada uno.', a:'Físicos: fallan componentes electrónicos (rotura de discos duros, por desgaste o altas temperaturas). Lógicos: fallos de software o de seguridad (accesos no autorizados, bugs, ataques por la red, troyanos).', k:['componentes','software','disco','troyano']},
+{t:'erp', q:'Diferencia entre plan de mantenimiento y plan de contingencia.', a:'Plan de mantenimiento: indica cada cuánto se hacen las copias de seguridad y de qué tipo. Plan de contingencia: pasos a seguir para que la empresa vuelva a funcionar con normalidad si algo falla y garantizar la continuidad. Fases: evaluación, planificación, pruebas de viabilidad y ejecución.', k:['copias','continuidad','evaluacion','ejecucion']},
+{t:'erp', q:'¿Qué es un ECM y qué módulos lo forman?', a:'Enterprise Content Management: solución integral para gestionar los contenidos empresariales. Módulos: DM (documentos), RM (documentos a conservar), WCM (contenido web), BPM (procesos de negocio), Workflow (flujos de documentación) y KM (conocimiento).', k:['dm','rm','wcm','bpm','workflow','km']},
+{t:'erp', q:'¿Qué es una tabla dinámica de Excel y para qué sirve?', a:'Es una herramienta de business intelligence que permite manejar enormes cantidades de datos con seguridad y rapidez y verlos desde distintas perspectivas (temporal, de calidad y de cantidad). Sirve para ordenar datos por importancia (análisis ABC), hacer gráficos y paneles con filtros y unir datos de distintos sitios.', k:['datos','perspectivas','abc','graficos']},
+{t:'erp', q:'¿Qué dos áreas generan intercambio de información en una empresa y qué aporta cada una?', a:'Relaciones con los clientes (CRM: mejora procesos, consultas y presentación de info; se puede pedir un presupuesto por formulario) y relaciones con los proveedores (conocer en tiempo real su planificación de producción, gestionar stock, controlar mejor y registrar facturas).', k:['clientes','proveedores','tiempo real','presupuesto']},
+{t:'erp', q:'¿De qué formas puede exportar información un ERP?', a:'Como informe en un documento de texto (que se completa a mano), como datos en bruto en una hoja de cálculo, en ficheros XML, en ficheros CSV, o integrándose con otro software como el correo (con un conector en cada lado).', k:['texto','hoja de calculo','xml','csv']}
+];
+
+
+/* ---------- Asignaturas, unidades e ids ---------- */
+const SUBJ = {
+  wp:  {name:'WordPress', units:{1:'Panel, entradas y medios', 2:'Apariencia, usuarios y plugins', 3:'Caché, páginas legales y contraseñas'}},
+  erp: {name:'ERP', units:{1:'ERP, flujos de información y adaptación', 2:'Módulos, informes y business intelligence', 3:'Seguridad y planes de contingencia', 4:'ECM e integración con ofimática'}}
+};
+const RANGES = {wp:[[0,17,1],[18,32,2],[33,99,3]], erp:[[0,13,1],[14,25,2],[26,31,3],[32,99,4]]};
+(function(){
+  const cnt = {wp:0, erp:0};
+  ABC.forEach(x => { if(!x.u){ const i = cnt[x.t]++; x.u = RANGES[x.t].find(r => i>=r[0] && i<=r[1])[2]; } });
+  const DEVU = {wp:[1,1,1,1,1,2,2,3,2,3,3,3,3,2], erp:[1,1,1,1,2,2,2,2,3,3,4,4,1,2]};
+  const c = {wp:0, erp:0};
+  DEV.forEach(x => { x.u = DEVU[x.t][c[x.t]++]; });
+  ABC.forEach((x,i) => { x.id = 'a'+i; });
+  DEV.forEach((x,i) => { x.id = 'd'+i; });
+})();
+
+const GOAL = 9.5, MIN_Q = 10, EXAM_N = 30, PRIOR = 1/3, WEAK = 0.9;
+const LET = ['A','B','C'];
+const MODE_LABEL = {exam:'Examen', all:'Todas', weak:'Flojas', new:'Nuevas', redo:'Falladas'};
+const fmt = x => (Math.round(x*10)/10).toLocaleString('es-ES');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const avg = a => a.length ? a.reduce((s,v)=>s+v,0)/a.length : 0;
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function fmtMin(m){
+  if(m < 1) return '1 min';
+  m = Math.round(m);
+  return m < 60 ? m + ' min' : Math.floor(m/60) + ' h' + (m%60 ? ' ' + (m%60) + ' min' : '');
+}
+function fmtStudied(sec){
+  if(!sec) return '0 h';
+  return sec < 3600 ? Math.max(1, Math.round(sec/60)) + ' min' : (Math.round(sec/360)/10).toLocaleString('es-ES') + ' h';
+}
+const pct = p => p < 0.01 ? '< 1 %' : Math.round(p*100) + ' %';
+
+/* ---------- Guardado: cuenta (db), navegador o memoria ---------- */
+const Store = {sessions:[], q:{}, kind:'mem', ref:null, ready:false, err:false, confirmDel:false};
+let chain = Promise.resolve();
+function persist(){
+  chain = chain.then(async () => {
+    try{
+      if(Store.kind === 'db') await Store.ref.set({sessions: Store.sessions, q: Store.q});
+      else if(Store.kind === 'local') localStorage.setItem('rep_v3', JSON.stringify({sessions: Store.sessions, q: Store.q}));
+      Store.err = false;
+    }catch(e){
+      if(Store.kind === 'db'){
+        Store.kind = 'local';
+        try{ localStorage.setItem('rep_v3', JSON.stringify({sessions: Store.sessions, q: Store.q})); Store.err = false; }
+        catch(e2){ Store.kind = 'mem'; Store.err = true; }
+      } else Store.err = true;
+      if(!RUN) render();
+    }
+  });
+}
+async function initStore(){
+  try{
+    if(window.claude && window.claude.use){
+      const db = await claude.use('db'), user = await claude.use('user');
+      const id = user ? await user.id() : null;
+      if(db && id){
+        Store.ref = db.doc('data/users/' + id + '/profile');
+        const snap = await Store.ref.get();
+        if(snap.exists){ const d = snap.data(); Store.sessions = Array.isArray(d.sessions) ? d.sessions.slice() : []; Store.q = d.q && typeof d.q === 'object' ? Object.assign({}, d.q) : {}; }
+        Store.kind = 'db';
+      }
+    }
+  }catch(e){ Store.kind = 'mem'; }
+  if(Store.kind !== 'db'){
+    try{ const d = JSON.parse(localStorage.getItem('rep_v3') || '{}'); Store.sessions = d.sessions || []; Store.q = d.q || {}; Store.kind = 'local'; }
+    catch(e){ Store.kind = 'mem'; Store.sessions = []; Store.q = {}; }
+  }
+  Store.ready = true;
+  render();
+}
+
+/* ---------- Modelo de dominio ---------- */
+const poolOf = (s,t) => (t === 'abc' ? ABC : DEV).filter(x => x.t === s);
+const pOf = x => Store.q[x.id] ? Store.q[x.id].p : PRIOR;
+function projection(s){
+  const pool = poolOf(s,'abc'), mean = avg(pool.map(pOf)), k = Math.min(EXAM_N, pool.length), gap = 1 - mean;
+  const need = T => gap <= (1-T) + 1e-9 ? 0 : Math.ceil(Math.log2(gap/(1-T)));
+  return {mean, score: mean*10, p10: Math.pow(mean,k), seenN: pool.filter(x => Store.q[x.id]).length, total: pool.length, k,
+          r95: need(GOAL/10), r10: need(Math.pow(0.5, 1/k))};
+}
+function secPer(s,t){
+  const ss = Store.sessions.filter(x => x.subj === s && x.tipo === t && x.n > 0);
+  const n = ss.reduce((a,x)=>a+x.n,0), sec = ss.reduce((a,x)=>a+x.sec,0);
+  if(n < 5) return t === 'abc' ? 15 : 60;
+  return Math.max(5, Math.min(120, Math.round(sec/n)));
+}
+
+/* ---------- Estado de la interfaz ---------- */
+const UI = {subj:'wp', tipo:'abc', mode:'all', units:{wp:[1,2,3], erp:[1,2,3,4]}, detOpen:false};
+let RUN = null;
+const root = document.getElementById('root');
+
+const seg = (act, items, cur) => `<div class="seg" role="group">${items.map(([v,l,dis]) =>
+  `<button type="button" data-act="${act}" data-v="${v}" aria-pressed="${cur===v}" ${dis?'disabled':''}>${l}</button>`).join('')}</div>`;
+
+function chartSvg(scores){
+  const W = 640, H = 280, L = 40, R = 16, T = 18, B = 30, pw = W-L-R, ph = H-T-B, N = scores.length;
+  const X = i => N === 1 ? L + pw/2 : L + 20 + (pw-40)*i/(N-1);
+  const Y = v => T + ph*(1 - v/10);
+  let g = '';
+  [0,2,4,6,8,10].forEach(v => { g += `<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end">${v}</text>`; });
+  g += `<line class="tgt" x1="${L}" x2="${W-R}" y1="${Y(GOAL)}" y2="${Y(GOAL)}"/><text class="tl" x="${L+6}" y="${Y(GOAL)+15}">Objetivo ${fmt(GOAL)}</text>`;
+  let body = '';
+  if(!N){
+    body = `<text x="${W/2}" y="${H/2}" text-anchor="middle">Aún no hay rondas de ${MIN_Q} o más preguntas</text>`;
+  } else {
+    const step = Math.ceil(N/12);
+    body += `<polyline class="ln" points="${scores.map((s,i)=>X(i)+','+Y(s)).join(' ')}"/>`;
+    scores.forEach((s,i) => {
+      body += `<circle class="pt ${s>=GOAL?'ok':''}" cx="${X(i)}" cy="${Y(s)}" r="${i===N-1?6:4}"/>`;
+      if(i%step === 0 || i === N-1) body += `<text x="${X(i)}" y="${H-10}" text-anchor="middle">${i+1}</text>`;
+    });
+    const s = scores[N-1];
+    body += `<text class="val" x="${X(N-1)}" y="${Math.max(12, Y(s)-12)}" text-anchor="middle">${fmt(s)}</text>`;
+  }
+  const lab = N ? 'Nota de cada ronda, la última fue ' + fmt(scores[N-1]) + ' sobre 10; objetivo ' + fmt(GOAL) : 'Gráfica vacía; objetivo ' + fmt(GOAL);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${lab}">${g}${body}<text x="${W-R}" y="${H-10}" text-anchor="end">ronda</text></svg>`;
+}
+
+/* ---------- Portada ---------- */
+function renderHome(){
+  const s = UI.subj, info = SUBJ[s], uids = Object.keys(info.units).map(Number);
+  const pr = projection(s), seen = pr.seenN > 0;
+  const totalQ = poolOf(s,'abc').length + poolOf(s,'dev').length;
+  const secA = secPer(s,'abc');
+  const studied = Store.sessions.filter(x => x.subj === s).reduce((a,x)=>a+x.sec,0);
+  const stat = (label, val, sub) => `<div class="stat"><small>${label}</small><b>${val}</b><span>${sub}</span></div>`;
+  const steps = r => !seen ? ['—','de tests repetidos'] : r === 0 ? ['Listo','ya estás en ese nivel'] :
+    [r + (r===1?' test':' tests'), 'repetidos · ≈ ' + fmtMin(r*pr.total*secA/60)];
+  const s95 = steps(pr.r95), s10 = steps(pr.r10);
+  const rows = uids.map(u => {
+    const sc = avg(poolOf(s,'abc').filter(x => x.u === u).map(pOf))*10;
+    return `<div class="urow"><span>UD0${u} · ${info.units[u]}</span><i class="bar"><b style="width:${sc*10}%"></b></i><em>${fmt(sc)}</em></div>`;
+  }).join('');
+  const scD = avg(poolOf(s,'dev').map(pOf))*10;
+  const rowD = `<div class="urow"><span>Desarrollo · todas las unidades</span><i class="bar"><b style="width:${scD*10}%"></b></i><em>${fmt(scD)}</em></div>`;
+
+  const base = poolOf(s, UI.tipo), sel = UI.units[s];
+  const inSel = base.filter(x => sel.includes(x.u));
+  const weak = inSel.filter(x => pOf(x) < WEAK), fresh = inSel.filter(x => !Store.q[x.id]);
+  const n = UI.mode === 'exam' ? Math.min(EXAM_N, inSel.length) : UI.mode === 'weak' ? weak.length : UI.mode === 'new' ? fresh.length : inSel.length;
+  const est = n * secPer(s, UI.tipo) / 60;
+  const chips = uids.map(u => `<button type="button" class="pill" data-act="unit" data-v="${u}" aria-pressed="${sel.includes(u)}">UD0${u} · ${base.filter(x => x.u === u).length}</button>`).join('');
+  const modes = [['exam','Examen',UI.tipo==='dev'], ['all','Todas'], ['weak','Flojas ('+weak.length+')'], ['new','Nuevas ('+fresh.length+')']];
+
+  const sc = Store.sessions.filter(x => x.subj === s && x.n >= MIN_Q).map(x => x.ok/x.n*10);
+  const where = Store.kind === 'db' ? 'El progreso se guarda en tu cuenta y solo lo ves tú.' : Store.kind === 'local' ? 'El progreso se guarda en este navegador.' : 'El progreso solo dura mientras tengas esta página abierta.';
+
+  root.innerHTML = `
+  <div class="top"><div><h1>${info.name}</h1><p class="sub">${totalQ} preguntas · ${uids.length} unidades</p></div>
+    ${seg('subj', Object.keys(SUBJ).map(k => [k, SUBJ[k].name]), s)}</div>
+
+  <section class="card"><h2>Tu proyección</h2>
+    <div class="stats">
+      ${stat('Nota en el examen', seen ? fmt(pr.score) : '—', seen ? 'de media en un examen de ' + pr.k : 'haz un test para calcularla')}
+      ${stat('Prob. de sacar 10', seen ? pct(pr.p10) : '—', pr.k + '/' + pr.k + ' en el examen')}
+      ${stat('Para llegar al ' + fmt(GOAL), s95[0], s95[1])}
+      ${stat('Para llegar al 10', s10[0], s10[1])}
+    </div>
+    <p class="meta">Examen de ${pr.k} preguntas de las ${uids.length} unidades mezcladas · estudiado ${fmtStudied(studied)} · ${pr.seenN}/${pr.total} preguntas vistas · ${secA} s por pregunta</p>
+    <div class="units">${rows}${rowD}</div>
+  </section>
+
+  <section class="card"><h2>Nuevo test</h2>
+    ${seg('tipo', [['abc','Test ABC'],['dev','Desarrollo']], UI.tipo)}
+    <div class="pills">${chips}</div>
+    ${seg('mode', modes, UI.mode)}
+    <p class="meta">${n} preguntas · orden y respuestas mezclados en cada repetición · ≈ ${fmtMin(est)}</p>
+    <button type="button" class="btn" data-act="start" ${n ? '' : 'disabled'}>Empezar</button>
+  </section>
+
+  <section class="card"><h2>Tu evolución</h2>${chartSvg(sc)}
+    <p class="meta">Cada punto es una ronda de ${MIN_Q} o más preguntas. La línea verde es tu objetivo, un ${fmt(GOAL)}.</p></section>
+
+  <details class="card" id="det" ${UI.detOpen ? 'open' : ''}><summary>¿Cómo se calculan la nota y las horas?</summary>
+    <div class="expl" style="margin-top:12px">
+      <p><b>Dominio de cada pregunta.</b> Empieza en 1/3, que es adivinar entre A, B y C. Cada vez que la respondes, el nuevo valor es la media entre el anterior y tu resultado (1 si aciertas, 0 si fallas). Un fallo baja mucho y los aciertos seguidos lo acercan a 1.</p>
+      <p><b>Nota en el examen.</b> Es la media del dominio de las preguntas de test de la asignatura, por 10. La probabilidad de sacar 10 es esa media elevada a ${pr.k}, las preguntas del examen.</p>
+      <p><b>Para llegar al ${fmt(GOAL)} y al 10.</b> Cuenta cuántas pasadas completas por todo el test hacen falta si aciertas todo, porque cada pasada reduce a la mitad lo que te falta. Es un mínimo: los fallos lo alargan. Llegar al 10 significa tener al menos un 50 % de probabilidad de sacar 10. Las horas son pasadas × preguntas × tus segundos por pregunta (15 s hasta que haya datos).</p>
+      <p><b>Flojas y nuevas.</b> Flojas son las preguntas con dominio por debajo de 0,9. Nuevas son las que nunca has respondido.</p>
+      <p><b>Desarrollo.</b> Cuenta como acertada si marcas "la sabía". No entra en la nota del examen, que usa solo el test.</p>
+      <div class="row">${Store.confirmDel
+        ? '<button type="button" class="btn warn small" data-act="delYes">Sí, borrar todo</button><button type="button" class="btn ghost small" data-act="delNo">Cancelar</button>'
+        : (Store.sessions.length || Object.keys(Store.q).length ? '<button type="button" class="btn ghost small" data-act="delAsk">Borrar mi historial</button>' : '')}</div>
+    </div>
+  </details>`;
+  document.getElementById('foot').textContent = where + ' Preguntas basadas en tus apuntes de WordPress y de ERP.' + (Store.err ? ' No se pudo guardar el último cambio.' : '');
+}
+
+/* ---------- Ejecución de un test ---------- */
+function startRun(list, mode){
+  list = shuffle(list.slice());
+  if(mode === 'exam') list = list.slice(0, EXAM_N);
+  const pos = shuffle(list.map((_,i) => i % 3));
+  const opts = list.map((x,i) => {
+    if(UI.tipo !== 'abc') return null;
+    const o = shuffle(x.w.slice()); o.splice(pos[i], 0, x.c); return {o, p: pos[i]};
+  });
+  RUN = {list, opts, i:0, res:[], picked:null, mode, tipo:UI.tipo, subj:UI.subj, sec:0, qt:Date.now(), saved:false, before:projection(UI.subj).score, revealed:false};
+  render(); window.scrollTo({top:0});
+}
+function record(x, ok, extra){
+  const prev = Store.q[x.id] ? Store.q[x.id].p : PRIOR;
+  Store.q[x.id] = {p: (prev + (ok ? 1 : 0))/2, n: (Store.q[x.id] ? Store.q[x.id].n : 0) + 1, t: Date.now()};
+  RUN.sec += Math.min(120, Math.round((Date.now() - RUN.qt)/1000));
+  RUN.res.push(Object.assign({x, ok}, extra || {}));
+  persist();
+}
+function endRun(){
+  const R = RUN;
+  if(R && !R.saved && R.res.length){
+    R.saved = true;
+    Store.sessions.push({ts:Date.now(), n:R.res.length, ok:R.res.filter(r => r.ok).length, mode:R.mode, subj:R.subj, tipo:R.tipo, sec:R.sec});
+    if(Store.sessions.length > 300) Store.sessions.shift();
+    persist();
+  }
+}
+function runHead(){
+  const R = RUN, n = R.list.length;
+  const okN = R.res.filter(r => r.ok).length;
+  return `<div class="topbar"><button type="button" class="link" data-act="exit">← Salir</button><span>${MODE_LABEL[R.mode]} · ${SUBJ[R.subj].name}</span></div>
+    <div class="progress"><div class="progress-top"><span>Pregunta ${Math.min(R.i+1, n)} de ${n}</span><span>${R.mode === 'exam' ? '' : okN + ' acertadas'}</span></div>
+    <i class="bar"><b style="width:${R.i/n*100}%"></b></i></div>`;
+}
+function renderRun(){
+  const R = RUN;
+  if(R.i >= R.list.length) return renderSummary();
+  const x = R.list[R.i], info = SUBJ[R.subj];
+  const tag = `<span class="tag">UD0${x.u} · ${esc(info.units[x.u])}</span>`;
+  if(R.tipo === 'abc'){
+    const ob = R.opts[R.i], answered = R.picked !== null, fb = R.mode !== 'exam';
+    const opts = ob.o.map((t,k) => {
+      let cls = '';
+      if(answered){ if(fb){ if(k === ob.p) cls = 'ok'; else if(k === R.picked) cls = 'bad'; } else if(k === R.picked) cls = 'sel'; }
+      return `<button type="button" class="opt ${cls}" data-act="opt" data-v="${k}" ${answered ? 'disabled' : ''}><span class="l">${LET[k]}</span><span class="t">${esc(t)}</span></button>`;
+    }).join('');
+    let extra = '';
+    if(answered){
+      const good = R.picked === ob.p;
+      extra = (fb ? `<div class="fb ${good?'ok':'bad'}" role="status"><strong>${good ? 'Correcto' : 'Incorrecto, la respuesta es la ' + LET[ob.p]}</strong><p>${esc(x.e)}</p></div>` : '') +
+        `<div class="row"><button type="button" class="btn" data-act="next" style="padding:11px 22px;font-size:.95rem">${R.i+1 === R.list.length ? 'Ver resultado' : 'Siguiente'}</button></div>`;
+    }
+    root.innerHTML = runHead() + `<section class="card">${tag}<h2 class="q">${esc(x.q)}</h2><div class="opts">${opts}</div>${extra}</section>`;
+    const nx = root.querySelector('[data-act="next"]'); if(nx) nx.focus();
+  } else {
+    root.innerHTML = runHead() + `<section class="card">${tag}<h2 class="q">${esc(x.q)}</h2>
+      <label for="ans" class="hint">Escribe tu respuesta con tus palabras y luego compárala con el modelo.</label>
+      <textarea id="ans" placeholder="Tu respuesta..."></textarea>
+      <div class="row"><button type="button" class="btn" data-act="reveal" style="padding:11px 22px;font-size:.95rem">Ver respuesta modelo</button></div>
+      <div id="model" hidden>
+        <div class="model"><h3>Respuesta modelo</h3><p>${esc(x.a)}</p><h3>Ideas clave en tu respuesta</h3><div class="chips" id="chips"></div></div>
+        <p class="hint" style="margin:12px 0 10px">¿La tenías?</p>
+        <div class="row"><button type="button" class="btn good" data-act="yes" style="padding:11px 22px;font-size:.95rem">Sí, la sabía</button><button type="button" class="btn warn" data-act="no" style="padding:11px 22px;font-size:.95rem">Tengo que repasarla</button></div>
+      </div></section>`;
+  }
+}
+function renderSummary(){
+  const R = RUN; endRun();
+  const n = R.res.length, ok = R.res.filter(r => r.ok).length, nota = ok/n*10, fails = R.res.filter(r => !r.ok);
+  const after = projection(R.subj).score;
+  const line = R.tipo === 'abc' ? `Tu nota estimada en el examen pasa de ${fmt(R.before)} a ${fmt(after)}.` : 'Las respuestas de desarrollo no entran en la nota del examen.';
+  const rev = fails.length ? '<h2>Para repasar</h2><div class="review">' + fails.map(r => R.tipo === 'abc'
+    ? `<div><b>${esc(r.x.q)}</b>${r.pickText ? `<small class="no">Tu respuesta: ${esc(r.pickText)}</small>` : ''}<small>Correcta (${r.letter}): ${esc(r.x.c)}</small></div>`
+    : `<div><b>${esc(r.x.q)}</b><small>${esc(r.x.a)}</small></div>`).join('') + '</div>' : '';
+  root.innerHTML = `<div class="topbar"><button type="button" class="link" data-act="home">← Volver al inicio</button><span>${MODE_LABEL[R.mode]} · ${SUBJ[R.subj].name}</span></div>
+    <section class="card"><span class="tag">Resultado</span><div class="score">${fmt(nota)}</div>
+      <p class="meta" style="font-size:1rem;color:var(--fg)">${ok} de ${n} acertadas. ${line}</p>
+      <div class="row"><button type="button" class="btn" data-act="home" style="padding:11px 22px;font-size:.95rem">Volver al inicio</button>
+      ${fails.length ? '<button type="button" class="btn ghost" data-act="again" style="padding:11px 22px;font-size:.95rem">Repetir las falladas</button>' : ''}</div>${rev}</section>`;
+  window.scrollTo({top:0});
+}
+function render(){
+  if(!Store.ready){ root.innerHTML = '<section class="card"><h2>Cargando tu progreso...</h2></section>'; return; }
+  RUN ? renderRun() : renderHome();
+}
+
+/* ---------- Eventos ---------- */
+root.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if(!b || b.disabled) return;
+  const a = b.dataset.act, v = b.dataset.v, R = RUN;
+  if(a === 'subj'){ UI.subj = v; render(); }
+  else if(a === 'tipo'){ UI.tipo = v; if(v === 'dev' && UI.mode === 'exam') UI.mode = 'all'; render(); }
+  else if(a === 'unit'){
+    const u = +v, cur = UI.units[UI.subj], i = cur.indexOf(u);
+    if(i >= 0){ if(cur.length > 1) cur.splice(i,1); } else cur.push(u);
+    render();
+  }
+  else if(a === 'mode'){ UI.mode = v; render(); }
+  else if(a === 'start'){
+    const inSel = poolOf(UI.subj, UI.tipo).filter(x => UI.units[UI.subj].includes(x.u));
+    const list = UI.mode === 'weak' ? inSel.filter(x => pOf(x) < WEAK) : UI.mode === 'new' ? inSel.filter(x => !Store.q[x.id]) : inSel;
+    if(list.length) startRun(list, UI.mode);
+  }
+  else if(a === 'opt'){
+    const k = +v, ob = R.opts[R.i];
+    record(R.list[R.i], k === ob.p, {letter: LET[ob.p], pickText: ob.o[k]});
+    R.picked = k; render();
+  }
+  else if(a === 'next'){ R.i++; R.picked = null; R.qt = Date.now(); render(); window.scrollTo({top:0}); }
+  else if(a === 'reveal'){
+    const x = R.list[R.i], txt = norm(document.getElementById('ans').value);
+    document.getElementById('chips').innerHTML = x.k.map(k => { const hit = txt.includes(norm(k)); return `<span class="chip ${hit?'hit':''}">${hit?'✓ ':''}${esc(k)}</span>`; }).join('');
+    document.getElementById('model').hidden = false;
+    b.hidden = true; document.getElementById('ans').readOnly = true;
+  }
+  else if(a === 'yes' || a === 'no'){ record(R.list[R.i], a === 'yes'); R.i++; R.qt = Date.now(); render(); window.scrollTo({top:0}); }
+  else if(a === 'exit' || a === 'home'){ endRun(); RUN = null; render(); window.scrollTo({top:0}); }
+  else if(a === 'again'){ const fl = R.res.filter(r => !r.ok).map(r => r.x); endRun(); UI.tipo = R.tipo; UI.subj = R.subj; startRun(fl, 'redo'); }
+  else if(a === 'delAsk'){ Store.confirmDel = true; UI.detOpen = true; render(); }
+  else if(a === 'delNo'){ Store.confirmDel = false; render(); }
+  else if(a === 'delYes'){ Store.confirmDel = false; Store.sessions = []; Store.q = {}; persist(); render(); }
+});
+root.addEventListener('toggle', e => { if(e.target && e.target.id === 'det') UI.detOpen = e.target.open; }, true);
+
+render();
+initStore();
+</script>
+</body>
+</html>
